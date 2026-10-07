@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Student Registration</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            cursor: pointer;
+        }
+
+        .student {
+            background: #f1f1f1;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Student Registration</h1>
+
+        <form id="studentForm">
+
+            <input
+                type="text"
+                id="name"
+                placeholder="Enter name"
+                required
+            >
+
+            <input
+                type="email"
+                id="email"
+                placeholder="Enter email"
+                required
+            >
+
+            <button type="submit">
+                Register Student
+            </button>
+
+        </form>
+
+        <h2>Students</h2>
+
+        <div id="studentList"></div>
+
+    </div>
+
+    <script>
+
+        const API_URL = "http://localhost:5000";
+
+        // Add student
+        document.getElementById("studentForm")
+            .addEventListener("submit", async function(event) {
+
+                event.preventDefault();
+
+                const name = document.getElementById("name").value;
+                const email = document.getElementById("email").value;
+
+                try {
+
+                    const response = await fetch(`${API_URL}/students`, {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            name: name,
+                            email: email
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    alert(data.message || data.error);
+
+                    document.getElementById("studentForm").reset();
+
+                    loadStudents();
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    alert("Unable to connect to backend");
+
+                }
+
+            });
+
+
+        // Load students
+        async function loadStudents() {
+
+            try {
+
+                const response = await fetch(`${API_URL}/students`);
+
+                const students = await response.json();
+
+                const studentList =
+                    document.getElementById("studentList");
+
+                studentList.innerHTML = "";
+
+                students.forEach(student => {
+
+                    const div = document.createElement("div");
+
+                    div.className = "student";
+
+                    div.innerHTML = `
+                        <strong>${student.name}</strong>
+                        <br>
+                        ${student.email}
+                    `;
+
+                    studentList.appendChild(div);
+
+                });
+
+            } catch (error) {
+
+                console.error(error);
+
+            }
+
+        }
+
+        loadStudents();
+
+    </script>
+
+</body>
+</html>
