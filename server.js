@@ -8,12 +8,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Serve frontend files
+app.use(express.static(__dirname));
+
 // MySQL connection
 const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "vijay@localhost",
-    database: "studentdb"
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT
 });
 
 // Test MySQL connection
@@ -26,13 +30,16 @@ db.connect((err) => {
     console.log("Connected to MySQL!");
 });
 
+// Home route
+app.get("/", (req, res) => {
+    res.sendFile(__dirname + "/index.html");
+});
+
 // Get all students
 app.get("/students", (req, res) => {
-
     const sql = "SELECT * FROM students";
 
     db.query(sql, (err, results) => {
-
         if (err) {
             return res.status(500).json({
                 error: err.message
@@ -45,7 +52,6 @@ app.get("/students", (req, res) => {
 
 // Add a student
 app.post("/students", (req, res) => {
-
     const { name, email } = req.body;
 
     if (!name || !email) {
@@ -58,7 +64,6 @@ app.post("/students", (req, res) => {
         "INSERT INTO students (name, email) VALUES (?, ?)";
 
     db.query(sql, [name, email], (err, result) => {
-
         if (err) {
             return res.status(500).json({
                 error: err.message
@@ -73,8 +78,8 @@ app.post("/students", (req, res) => {
 });
 
 // Start server
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
